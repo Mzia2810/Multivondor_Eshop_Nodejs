@@ -16,14 +16,14 @@ stages:
         versionSpec: '20.x'
       displayName: 'Install Node.js'
 
-    # Checkout code (important!)
+    # Checkout code
     - checkout: self
 
     # Install dependencies and build
     - task: CmdLine@2
-      displayName: 'npm install and build'
+      displayName: 'npm install and build (ignore peer deps)'
       inputs:
         script: |
-          npm install
+          cd frontend
+          npm install --legacy-peer-deps
           npm run build
-        workingDirectory: 'frontend'   # <-- yaha folder name jahan package.json hai
