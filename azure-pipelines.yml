@@ -7,23 +7,39 @@ stages:
 - stage: Build
   jobs:
   - job: NodeBuild
+    # Use your Mac agent pool
     pool:
-      vmImage: ubuntu-latest
+      name: Default       # replace with your Mac agent pool name
+      demands:
+        - agent.os -equals Darwin  # ensures only Mac agents run
+
     steps:
+    # Checkout code first
+    - checkout: self
+
     # Install Node.js
     - task: NodeTool@0
       inputs:
         versionSpec: '20.x'
       displayName: 'Install Node.js'
 
-    # Checkout code
-    - checkout: self
-
     # Install dependencies and build
     - task: CmdLine@2
-      displayName: 'npm install and build (ignore peer deps)'
+      displayName: 'npm install, type check and build'
       inputs:
         script: |
           cd frontend
+          # Fix peer dependency conflicts
           npm install --legacy-peer-deps
+
+          # Fix Node.js crypto issue for react-scripts
+          export NODE_OPTIONS=--openssl-legacy-provider
+
+          # Optional: run TypeScript type check
+          npx tsc --noEmit
+
+          # Optional: run ESLint
+          npx eslint src/**/*.ts src/**/*.tsx || true
+
+          # Build React project
           npm run build
